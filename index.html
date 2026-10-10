@@ -188,36 +188,6 @@
   .fr .stage img,.fr .stage video{max-width:100%;max-height:100%}
   .fr .stage iframe{width:100%;height:100%;border:none;background:#fff}
 
-  /* ---------- app: browser ---------- */
-  .browser{height:100%;display:flex;flex-direction:column}
-  .browser-bar{flex:none;display:flex;gap:6px;padding:8px 10px;align-items:center;
-    border-bottom:1px solid var(--glass-border);background:rgba(0,0,0,.3)}
-  .browser-bar button{width:34px;height:34px;flex:none;border:1px solid var(--glass-border);border-radius:10px;
-    cursor:pointer;background:rgba(255,255,255,.07);color:var(--text);font-size:15px}
-  .browser-bar button:hover{background:rgba(255,255,255,.16)}
-  .browser-bar button.go{width:auto;padding:0 16px;font-size:13px;font-weight:600;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f;border:none}
-  .browser-url{flex:1;height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--glass-border);
-    background:rgba(255,255,255,.07);color:var(--text);font-size:13.5px;outline:none;min-width:0}
-  .browser-url:focus{border-color:var(--accent)}
-  .browser-view{flex:1;position:relative;min-height:0}
-  .browser-home{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:14px;text-align:center;padding:24px;overflow-y:auto;
-    background:radial-gradient(600px 400px at 50% 30%, rgba(34,211,238,.12), transparent 70%)}
-  .browser-home h2{font-size:22px;font-weight:200;letter-spacing:6px}
-  .browser-home .pow{color:var(--text-dim);font-size:12.5px}
-  .browser-home .pow b{color:var(--text)}
-  .browser-home .big-orb{width:64px;height:64px;border-radius:50%;position:relative;
-    background:conic-gradient(from 0deg,var(--accent),var(--accent2),#ec4899,var(--accent));
-    animation:spin 6s linear infinite;box-shadow:0 0 40px rgba(34,211,238,.4)}
-  .browser-home .big-orb::after{content:"";position:absolute;inset:0;border-radius:50%;background:#0a0f22;transform:scale(.68)}
-  .qlinks{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
-  .qlink{display:flex;flex-direction:column;align-items:center;gap:8px;width:92px;padding:14px 6px;
-    border-radius:14px;border:1px solid var(--glass-border);cursor:pointer;
-    background:rgba(255,255,255,.05);color:var(--text);font-size:12px}
-  .qlink:hover{background:rgba(255,255,255,.12);border-color:var(--accent)}
-  .qlink span{font-size:26px}
-
   .browser-frame{width:100%;height:100%;border:none;background:#0a0f22}
 
   @media (max-width:640px){
@@ -397,64 +367,11 @@ function dragify(el, handle){
 
 /* ================= apps ================= */
 function renderBrowser(body){
-  body.innerHTML =
-    '<div class="browser"><div class="browser-bar">'+
-    '<button data-n="back" title="Back">\u2190</button>'+
-    '<button data-n="fwd" title="Forward">\u2192</button>'+
-    '<button data-n="reload" title="Reload">\u21BB</button>'+
-    '<button data-n="home" title="Home">\u2302</button>'+
-    '<input class="browser-url" placeholder="Search or enter address" spellcheck="false" autocomplete="off">'+
-    '<button data-n="go" class="go">Go</button></div>'+
-    '<div class="browser-view"><iframe class="browser-frame" title="Flux Browser"></iframe>'+
-    '<div class="browser-home"><div class="big-orb"></div><h2>FLUX BROWSER</h2>'+
-    '<p class="pow">Powered by <b>Puter Surf</b> \u2014 open source</p>'+
-    '<div class="qlinks"></div></div></div></div>';
-  const frame = body.querySelector(".browser-frame");
-  const urlbar = body.querySelector(".browser-url");
-  const home = body.querySelector(".browser-home");
-  const hist = []; let hi = -1;
-  const PROXY = "https://puter.surf/";
-  const proxyFor = url => PROXY + "?url=" + encodeURIComponent(url);
-  const links = [
-    ["\u{1F4AC}","RealChat","https://sites.google.com/view/realchat-revive"],
-    ["\u{1F50D}","Google","https://www.google.com"],
-    ["\u{1F4DA}","Wikipedia","https://www.wikipedia.org"],
-    ["\u{1F986}","DuckDuckGo","https://duckduckgo.com"]
-  ];
-  const ql = body.querySelector(".qlinks");
-  links.forEach(([icon,name,url]) => {
-    const b = document.createElement("button");
-    b.className = "qlink"; b.innerHTML = "<span>"+icon+"</span>"+name;
-    b.onclick = () => nav(url);
-    ql.appendChild(b);
-  });
-  function normalize(input){
-    const v = input.trim(); if(!v) return null;
-    if(!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(v)){
-      if(v.includes(".") && !v.includes(" ")) return "https://" + v;
-      return "https://duckduckgo.com/?q=" + encodeURIComponent(v);
-    }
-    return v;
-  }
-  function show(i){
-    home.style.display = "none";
-    frame.src = proxyFor(hist[i]);
-    urlbar.value = hist[i];
-  }
-  function nav(url){
-    hist.length = hi + 1; hist.push(url); hi++;
-    show(hi);
-  }
-  function goInput(){ const u = normalize(urlbar.value); if(u) nav(u); }
-  urlbar.addEventListener("keydown", e => { if(e.key === "Enter") goInput(); });
-  body.querySelectorAll(".browser-bar button").forEach(b => b.addEventListener("click", () => {
-    const n = b.dataset.n;
-    if(n === "go") goInput();
-    else if(n === "home"){ home.style.display = "flex"; frame.removeAttribute("src"); urlbar.value = ""; hist.length = 0; hi = -1; }
-    else if(n === "reload" && hi >= 0) show(hi);
-    else if(n === "back" && hi > 0){ hi--; show(hi); }
-    else if(n === "fwd" && hi < hist.length - 1){ hi++; show(hi); }
-  }));
+  const f = document.createElement("iframe");
+  f.className = "browser-frame";
+  f.title = "Flux Browser";
+  f.src = "https://puter.surf/";
+  body.appendChild(f);
 }
 
 function renderRealChat(body){
