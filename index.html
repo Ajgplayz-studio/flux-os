@@ -246,11 +246,10 @@ const APPS = {
   settings:  {name:"Settings",    icon:"\u2699\uFE0F", desc:"Wallpapers, accents, about.", render:renderSettings},
   appstore:  {name:"App Store",   icon:"\u{1F6CD}\uFE0F", desc:"Every app on Flux OS.", render:renderAppStore},
   minecraft: {name:"Minecraft",   icon:"\u{1F9F1}", desc:"Blocky sandbox fun.", url:"https://ajgplayz-studio.github.io/Arcade-hub/minecraft.html"},
-  yt2:       {name:"YT 2",        icon:"\u{1F4FA}", desc:"Watch videos.", url:"https://yt-2.on.websim.com"},
-  ajgconnect:{name:"AJG Connect", icon:"\u{1F4AC}", desc:"Chat with the crew.", url:"https://AtlasOs-Official.github.io/Galaxy/chats.html"},
+  realchat:  {name:"RealChat",    icon:"\u{1F4AC}", desc:"Chat with the crew.", render:renderRealChat},
   filerunner:{name:"File Runner", icon:"\u{1F4C4}", desc:"Open HTML, images, audio, video.", render:renderFileRunner},
 };
-const ORDER = ["browser","terminal","calculator","notepad","appstore","minecraft","yt2","ajgconnect","filerunner","settings"];
+const ORDER = ["browser","terminal","calculator","notepad","appstore","minecraft","realchat","filerunner","settings"];
 
 let zTop = 100, activeWin = null;
 const wins = {};   // id -> {el, minimized}
@@ -383,6 +382,13 @@ function renderBrowser(body){
     '<div class="soon"><div class="big-orb"></div><h2>BROWSER</h2>'+
     '<p style="font-size:19px;letter-spacing:4px;color:var(--text)">COMING SOON</p>'+
     '<p>The Flux browser is on its way. Check back soon.</p></div>';
+}
+
+function renderRealChat(body){
+  body.innerHTML =
+    '<div class="soon"><div class="big-orb"></div><h2>REALCHAT</h2>'+
+    '<p style="font-size:19px;letter-spacing:4px;color:var(--text)">COMING SOON</p>'+
+    '<p>RealChat is on its way. Check back soon.</p></div>';
 }
 
 function renderTerminal(body){
