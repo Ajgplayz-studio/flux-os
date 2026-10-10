@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flux OS</title>
+<style>
+  :root{
+    --accent:#22d3ee;
+    --accent2:#a78bfa;
+    --glass:rgba(15,20,40,.55);
+    --glass-border:rgba(255,255,255,.14);
+    --text:#f1f5f9;
+    --text-dim:#94a3b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:var(--text);user-select:none;
+    background:#05070f;
+  }
+  /* ---------- wallpapers ---------- */
+  #wallpaper{position:fixed;inset:0;z-index:0;transition:opacity .6s}
+  .wp-aurora{background:
+    radial-gradient(1000px 600px at 15% 20%, rgba(34,211,238,.35), transparent 60%),
+    radial-gradient(900px 700px at 85% 15%, rgba(167,139,250,.35), transparent 60%),
+    radial-gradient(1100px 800px at 50% 100%, rgba(236,72,153,.25), transparent 60%),
+    linear-gradient(160deg,#070b18,#0b1030 55%,#12071f);}
+  .wp-sunset{background:
+    radial-gradient(1000px 600px at 20% 30%, rgba(251,146,60,.4), transparent 60%),
+    radial-gradient(900px 700px at 80% 20%, rgba(236,72,153,.35), transparent 60%),
+    linear-gradient(160deg,#160a1e,#3b1030 55%,#0f0a24);}
+  .wp-ocean{background:
+    radial-gradient(1000px 600px at 80% 80%, rgba(34,211,238,.35), transparent 60%),
+    radial-gradient(900px 700px at 15% 15%, rgba(59,130,246,.4), transparent 60%),
+    linear-gradient(160deg,#04121f,#062a3f 55%,#03101c);}
+  .wp-midnight{background:
+    radial-gradient(800px 500px at 50% 30%, rgba(148,163,184,.18), transparent 60%),
+    linear-gradient(160deg,#020409,#0a0f1e 60%,#020409);}
+  #wallpaper::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.45) 100%);}
+
+  /* ---------- boot ---------- */
+  #boot{position:fixed;inset:0;z-index:1000;background:#04060d;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;gap:22px;
+    transition:opacity .8s}
+  #boot.done{opacity:0;pointer-events:none}
+  .flux-orb{width:92px;height:92px;border-radius:50%;
+    background:conic-gradient(from 0deg,var(--accent),var(--accent2),#ec4899,var(--accent));
+    filter:blur(1px);animation:spin 3s linear infinite;
+    box-shadow:0 0 60px rgba(34,211,238,.5)}
+  .flux-orb::after{content:"";position:absolute;width:92px;height:92px;border-radius:50%;
+    background:#04060d;transform:scale(.72)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #boot h1{font-size:34px;font-weight:200;letter-spacing:14px;margin-left:14px}
+  #boot .bar{width:220px;height:4px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+  #boot .bar i{display:block;height:100%;width:0;border-radius:4px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+
+  /* ---------- top bar ---------- */
+  #topbar{position:fixed;top:0;left:0;right:0;height:44px;z-index:500;
+    display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+    background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--glass-border)}
+  #orb-btn{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;position:relative;
+    background:conic-gradient(from 0deg,var(--accent),var(--accent2),#ec4899,var(--accent));
+    box-shadow:0 0 14px rgba(34,211,238,.45)}
+  #orb-btn::after{content:"";position:absolute;inset:0;border-radius:50%;background:#0b1030;transform:scale(.62)}
+  #orb-btn:hover{transform:scale(1.12)}
+  #clock{font-size:14px;letter-spacing:1px;color:var(--text)}
+  #top-right{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-dim)}
+  #flux-tag{font-weight:600;letter-spacing:3px;font-size:12px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* ---------- desktop icons ---------- */
+  #desktop{position:fixed;inset:44px 0 0 0;z-index:1;padding:22px;
+    display:flex;flex-direction:column;flex-wrap:wrap;gap:6px;align-content:flex-start}
+  .dicon{width:92px;padding:12px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;
+    border-radius:14px;cursor:pointer;border:1px solid transparent}
+  .dicon:hover{background:rgba(255,255,255,.08);border-color:var(--glass-border)}
+  .dicon .glyph{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-size:28px;background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.04));
+    border:1px solid var(--glass-border);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .dicon .lbl{font-size:12px;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.7);line-height:1.25}
+
+  /* ---------- launcher ---------- */
+  #launcher{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;
+    background:rgba(3,5,12,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+  #launcher.open{display:flex}
+  #launcher-inner{width:min(680px,92vw);max-height:84vh;display:flex;flex-direction:column;gap:18px}
+  #launcher-search{padding:14px 20px;border-radius:16px;border:1px solid var(--glass-border);
+    background:rgba(255,255,255,.07);color:var(--text);font-size:16px;outline:none}
+  #launcher-search::placeholder{color:var(--text-dim)}
+  #launcher-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;overflow-y:auto;padding:4px}
+  #launcher h2{text-align:center;font-weight:200;letter-spacing:8px;font-size:20px;color:var(--text-dim)}
+
+  /* ---------- windows ---------- */
+  .win{position:fixed;z-index:100;display:flex;flex-direction:column;
+    background:var(--glass);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    border:1px solid var(--glass-border);border-radius:18px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.55);min-width:300px;min-height:200px}
+  .win.active{border-color:rgba(255,255,255,.28);box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(34,211,238,.15)}
+  .win.maxed{inset:44px 0 0 0 !important;width:auto !important;height:auto !important;border-radius:0}
+  .titlebar{height:42px;flex:none;display:flex;align-items:center;gap:10px;padding:0 8px 0 16px;cursor:grab;
+    background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.02));
+    border-bottom:1px solid var(--glass-border)}
+  .titlebar:active{cursor:grabbing}
+  .titlebar .ticon{font-size:17px}
+  .titlebar .tname{font-size:13.5px;font-weight:600;letter-spacing:.4px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wctl{display:flex;gap:6px}
+  .wctl button{width:30px;height:26px;border:none;border-radius:8px;cursor:pointer;
+    background:rgba(255,255,255,.07);color:var(--text);font-size:13px;line-height:1;
+    display:flex;align-items:center;justify-content:center}
+  .wctl button:hover{background:rgba(255,255,255,.18)}
+  .wctl .x:hover{background:#e5484d}
+  .winbody{flex:1;overflow:auto;position:relative;background:rgba(5,8,18,.35)}
+  .win.min{display:none}
+
+  /* ---------- tray ---------- */
+  #tray{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:550;
+    display:flex;gap:8px;padding:8px 12px;border-radius:18px;
+    background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glass-border)}
+  #tray:empty{display:none}
+  .tray-item{padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.08);cursor:pointer;
+    font-size:13px;border:1px solid transparent;white-space:nowrap}
+  .tray-item:hover{background:rgba(255,255,255,.16)}
+  .tray-item.active{border-color:var(--accent)}
+
+  /* ---------- app: browser coming soon ---------- */
+  .soon{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:30px}
+  .soon .big-orb{width:84px;height:84px;border-radius:50%;position:relative;
+    background:conic-gradient(from 0deg,var(--accent),var(--accent2),#ec4899,var(--accent));
+    animation:spin 6s linear infinite;box-shadow:0 0 50px rgba(34,211,238,.4)}
+  .soon .big-orb::after{content:"";position:absolute;inset:0;border-radius:50%;background:#0a0f22;transform:scale(.68)}
+  .soon h2{font-size:26px;font-weight:200;letter-spacing:6px}
+  .soon p{color:var(--text-dim);font-size:14px;max-width:340px;line-height:1.6}
+
+  /* ---------- app: terminal ---------- */
+  .term{height:100%;background:rgba(2,4,10,.85);padding:14px;font-family:Consolas,Menlo,monospace;
+    font-size:13.5px;line-height:1.55;overflow-y:auto;color:#7ef9c6}
+  .term .in-line{display:flex;gap:8px}
+  .term input{flex:1;background:none;border:none;outline:none;color:#7ef9c6;font:inherit}
+  .term .prompt{color:var(--accent)}
+
+  /* ---------- app: calculator ---------- */
+  .calc{height:100%;display:flex;flex-direction:column;padding:16px;gap:12px;background:rgba(5,8,18,.5)}
+  .calc-display{background:rgba(0,0,0,.4);border:1px solid var(--glass-border);border-radius:14px;
+    padding:18px;text-align:right;font-size:34px;font-weight:200;min-height:76px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .calc-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .calc-grid button{border:1px solid var(--glass-border);border-radius:12px;font-size:19px;cursor:pointer;
+    background:rgba(255,255,255,.06);color:var(--text)}
+  .calc-grid button:hover{background:rgba(255,255,255,.14)}
+  .calc-grid button.op{background:rgba(34,211,238,.16);color:var(--accent)}
+  .calc-grid button.eq{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f;font-weight:700}
+
+  /* ---------- app: notepad ---------- */
+  .notes{height:100%;display:flex;flex-direction:column}
+  .notes-bar{flex:none;display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--glass-border);align-items:center}
+  .notes-bar button{padding:8px 16px;border-radius:10px;border:1px solid var(--glass-border);cursor:pointer;
+    background:rgba(255,255,255,.07);color:var(--text);font-size:13px}
+  .notes-bar button:hover{background:rgba(255,255,255,.15)}
+  .notes-bar .count{margin-left:auto;font-size:12px;color:var(--text-dim)}
+  .notes textarea{flex:1;background:rgba(0,0,0,.25);border:none;outline:none;resize:none;color:var(--text);
+    padding:16px;font-size:15px;line-height:1.65;font-family:inherit}
+
+  /* ---------- app: settings ---------- */
+  .settings{padding:22px;display:flex;flex-direction:column;gap:22px;max-width:520px}
+  .settings h3{font-size:13px;letter-spacing:2px;color:var(--text-dim);font-weight:600;margin-bottom:10px}
+  .swatches{display:flex;gap:10px}
+  .swatch{width:64px;height:44px;border-radius:12px;cursor:pointer;border:2px solid transparent}
+  .swatch.sel{border-color:var(--accent);box-shadow:0 0 12px rgba(34,211,238,.5)}
+  .accents{display:flex;gap:10px}
+  .accent-dot{width:38px;height:38px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+  .accent-dot.sel{border-color:#fff}
+  .about{background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:14px;padding:16px;
+    font-size:13.5px;line-height:1.7;color:var(--text-dim)}
+  .about b{color:var(--text)}
+
+  /* ---------- app: app store ---------- */
+  .store{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;align-content:start}
+  .app-card{background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:16px;
+    padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+  .app-card .glyph{font-size:34px}
+  .app-card h4{font-size:15px}
+  .app-card p{font-size:12.5px;color:var(--text-dim);line-height:1.5;flex:1}
+  .app-card button{padding:9px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f}
+
+  /* ---------- app: file runner ---------- */
+  .fr{padding:20px;display:flex;flex-direction:column;gap:14px;height:100%}
+  .fr label{display:inline-block;padding:12px 22px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f;align-self:flex-start}
+  .fr .stage{flex:1;border:1px dashed var(--glass-border);border-radius:14px;display:flex;align-items:center;
+    justify-content:center;overflow:auto;color:var(--text-dim);font-size:14px;min-height:200px;background:rgba(0,0,0,.25)}
+  .fr .stage img,.fr .stage video{max-width:100%;max-height:100%}
+  .fr .stage iframe{width:100%;height:100%;border:none;background:#fff}
+
+  .browser-frame{width:100%;height:100%;border:none;background:#0a0f22}
+
+  @media (max-width:640px){
+    #desktop{padding:14px}
+    .dicon{width:76px}
+    .dicon .glyph{width:46px;height:46px;font-size:24px}
+    .win{inset:44px 0 0 0 !important;width:auto !important;height:auto !important;border-radius:0}
+  }
+</style>
+</head>
+<body>
+<div id="wallpaper" class="wp-aurora"></div>
+
+<div id="boot">
+  <div class="flux-orb"></div>
+  <h1>FLUX</h1>
+  <div class="bar"><i id="boot-fill"></i></div>
+</div>
+
+<div id="topbar">
+  <button id="orb-btn" title="Open launcher" aria-label="Open launcher"></button>
+  <div id="clock">--:--</div>
+  <div id="top-right"><span id="datestr"></span><span id="flux-tag">FLUX&nbsp;OS</span></div>
+</div>
+
+<div id="desktop"></div>
+
+<div id="launcher">
+  <div id="launcher-inner">
+    <h2>FLOW</h2>
+    <input id="launcher-search" placeholder="Search apps..." autocomplete="off">
+    <div id="launcher-grid"></div>
+  </div>
+</div>
+
+<div id="tray"></div>
+
+<script>
+"use strict";
+/* ================= Flux OS ================= */
+const APPS = {
+  browser:   {name:"Browser",    icon:"\u{1F310}", desc:"The Flux web browser.", render:renderBrowser},
+  terminal:  {name:"Terminal",    icon:"\u{1F4BB}", desc:"Command line for Flux OS.", render:renderTerminal},
+  calculator:{name:"Calculator",  icon:"\u{1F9EE}", desc:"Quick math, Flux style.", render:renderCalculator},
+  notepad:   {name:"Notepad",     icon:"\u{1F4DD}", desc:"Jot things down. Auto-saves.", render:renderNotepad},
+  settings:  {name:"Settings",    icon:"\u2699\uFE0F", desc:"Wallpapers, accents, about.", render:renderSettings},
+  appstore:  {name:"App Store",   icon:"\u{1F6CD}\uFE0F", desc:"Every app on Flux OS.", render:renderAppStore},
+  minecraft: {name:"Minecraft",   icon:"\u{1F9F1}", desc:"Blocky sandbox fun.", url:"https://ajgplayz-studio.github.io/Arcade-hub/minecraft.html"},
+  yt2:       {name:"YT 2",        icon:"\u{1F4FA}", desc:"Watch videos.", url:"https://yt-2.on.websim.com"},
+  ajgconnect:{name:"AJG Connect", icon:"\u{1F4AC}", desc:"Chat with the crew.", url:"https://AtlasOs-Official.github.io/Galaxy/chats.html"},
+  filerunner:{name:"File Runner", icon:"\u{1F4C4}", desc:"Open HTML, images, audio, video.", render:renderFileRunner},
+};
+const ORDER = ["browser","terminal","calculator","notepad","appstore","minecraft","yt2","ajgconnect","filerunner","settings"];
+
+let zTop = 100, activeWin = null;
+const wins = {};   // id -> {el, minimized}
+
+/* ---------- clock ---------- */
+function tick(){
+  const d = new Date();
+  let h = d.getHours(), m = String(d.getMinutes()).padStart(2,"0");
+  const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  document.getElementById("clock").textContent = h + ":" + m + " " + ap;
+  const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const mos=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  document.getElementById("datestr").textContent = days[d.getDay()]+" "+mos[d.getMonth()]+" "+d.getDate();
+}
+setInterval(tick, 1000); tick();
+
+/* ---------- desktop + launcher ---------- */
+const desktop = document.getElementById("desktop");
+const lgrid = document.getElementById("launcher-grid");
+function iconEl(id){
+  const a = APPS[id];
+  const d = document.createElement("div");
+  d.className = "dicon";
+  d.innerHTML = '<div class="glyph">'+a.icon+'</div><div class="lbl">'+a.name+'</div>';
+  d.onclick = () => openApp(id);
+  return d;
+}
+function buildDesktop(){
+  desktop.innerHTML = "";
+  ORDER.forEach(id => desktop.appendChild(iconEl(id)));
+}
+function buildLauncher(filter){
+  lgrid.innerHTML = "";
+  ORDER.filter(id => APPS[id].name.toLowerCase().includes((filter||"").toLowerCase()))
+       .forEach(id => lgrid.appendChild(iconEl(id)));
+}
+buildDesktop(); buildLauncher("");
+const launcher = document.getElementById("launcher");
+const search = document.getElementById("launcher-search");
+document.getElementById("orb-btn").onclick = () => {
+  launcher.classList.add("open"); search.value=""; buildLauncher(""); setTimeout(()=>search.focus(),50);
+};
+search.oninput = () => buildLauncher(search.value);
+launcher.addEventListener("click", e => { if(e.target === launcher) launcher.classList.remove("open"); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") launcher.classList.remove("open"); });
+
+/* ---------- window manager ---------- */
+const tray = document.getElementById("tray");
+function refreshTray(){
+  tray.innerHTML = "";
+  Object.keys(wins).forEach(id => {
+    const w = wins[id];
+    if(!w.minimized) return;
+    const b = document.createElement("div");
+    b.className = "tray-item"; b.textContent = APPS[id].icon + " " + APPS[id].name;
+    b.onclick = () => toggleMin(id);
+    tray.appendChild(b);
+  });
+}
+function focusWin(id){
+  const w = wins[id]; if(!w) return;
+  w.el.style.zIndex = ++zTop; w.el.classList.add("active");
+  if(activeWin && activeWin !== id && wins[activeWin]) wins[activeWin].el.classList.remove("active");
+  activeWin = id; refreshTray();
+}
+function openApp(id){
+  launcher.classList.remove("open");
+  if(wins[id]){ const w = wins[id]; if(w.minimized) toggleMin(id); focusWin(id); return; }
+  const a = APPS[id];
+  const el = document.createElement("div");
+  el.className = "win";
+  const W = Math.min(760, innerWidth - 24), H = Math.min(500, innerHeight - 120);
+  const n = Object.keys(wins).length;
+  el.style.width = W+"px"; el.style.height = H+"px";
+  el.style.left = Math.max(8,(innerWidth-W)/2 + (n%5)*28 - 56)+"px";
+  el.style.top = Math.max(52,(innerHeight-H)/2 + (n%5)*22 - 40)+"px";
+  el.innerHTML =
+    '<div class="titlebar"><span class="ticon">'+a.icon+'</span><span class="tname">'+a.name+'</span>'+
+    '<div class="wctl"><button data-act="min" title="Minimize">\u2013</button>'+
+    '<button data-act="max" title="Maximize">\u25A2</button>'+
+    '<button data-act="close" class="x" title="Close">\u2715</button></div></div>'+
+    '<div class="winbody"></div>';
+  document.body.appendChild(el);
+  wins[id] = {el, minimized:false};
+  el.addEventListener("mousedown", () => focusWin(id));
+  el.querySelectorAll(".wctl button").forEach(b => b.addEventListener("click", e => {
+    e.stopPropagation();
+    const act = b.dataset.act;
+    if(act === "close") closeWin(id);
+    else if(act === "min") toggleMin(id);
+    else if(act === "max") el.classList.toggle("maxed");
+  }));
+  dragify(el, el.querySelector(".titlebar"));
+  const body = el.querySelector(".winbody");
+  if(a.url){ const f = document.createElement("iframe"); f.className="browser-frame"; f.src=a.url; body.appendChild(f); }
+  else if(a.render) a.render(body, id);
+  focusWin(id);
+}
+function closeWin(id){
+  const w = wins[id]; if(!w) return;
+  w.el.remove(); delete wins[id];
+  if(activeWin === id) activeWin = null;
+  refreshTray();
+}
+function toggleMin(id){
+  const w = wins[id]; if(!w) return;
+  w.minimized = !w.minimized;
+  w.el.classList.toggle("min", w.minimized);
+  if(!w.minimized) focusWin(id); else refreshTray();
+}
+function dragify(el, handle){
+  let sx, sy, ox, oy, on=false;
+  handle.addEventListener("mousedown", e => {
+    if(e.target.closest(".wctl") || el.classList.contains("maxed")) return;
+    on = true; sx = e.clientX; sy = e.clientY;
+    const r = el.getBoundingClientRect(); ox = r.left; oy = r.top;
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove", e => {
+    if(!on) return;
+    el.style.left = Math.max(0, Math.min(innerWidth - 60, ox + e.clientX - sx)) + "px";
+    el.style.top = Math.max(44, Math.min(innerHeight - 40, oy + e.clientY - sy)) + "px";
+  });
+  document.addEventListener("mouseup", () => on = false);
+}
+
+/* ================= apps ================= */
+function renderBrowser(body){
+  body.innerHTML =
+    '<div class="soon"><div class="big-orb"></div><h2>BROWSER</h2>'+
+    '<p style="font-size:19px;letter-spacing:4px;color:var(--text)">COMING SOON</p>'+
+    '<p>The Flux browser is on its way. Check back soon.</p></div>';
+}
+
+function renderTerminal(body){
+  body.innerHTML = '<div class="term" id="term-out"></div>';
+  const out = body.querySelector("#term-out");
+  const print = h => { const d=document.createElement("div"); d.innerHTML=h; out.appendChild(d); out.scrollTop=out.scrollHeight; };
+  const promptLine = () => {
+    const d = document.createElement("div"); d.className="in-line";
+    d.innerHTML = '<span class="prompt">flux&gt;</span>';
+    const inp = document.createElement("input"); inp.setAttribute("spellcheck","false");
+    d.appendChild(inp); out.appendChild(d); inp.focus(); out.scrollTop=out.scrollHeight;
+    inp.addEventListener("keydown", e => {
+      if(e.key !== "Enter") return;
+      const raw = inp.value; d.innerHTML = '<span class="prompt">flux&gt;</span> ' + escapeHtml(raw);
+      runCmd(raw.trim()); promptLine();
+    });
+    out.onclick = () => inp.focus();
+  };
+  const escapeHtml = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  function runCmd(raw){
+    if(!raw) return;
+    const [cmd, ...args] = raw.split(/\s+/);
+    const c = cmd.toLowerCase();
+    if(c === "help") print("commands: help, echo, clear, date, whoami, apps, open &lt;app&gt;, about");
+    else if(c === "echo") print(escapeHtml(args.join(" ")));
+    else if(c === "clear") out.innerHTML = "";
+    else if(c === "date") print(new Date().toString());
+    else if(c === "whoami") print("flux-user");
+    else if(c === "apps") print(ORDER.map(id=>APPS[id].name).join(", "));
+    else if(c === "about") print("Flux OS v1.0 \u2014 a brand new browser OS.");
+    else if(c === "open"){
+      const id = Object.keys(APPS).find(k => APPS[k].name.toLowerCase() === args.join(" ").toLowerCase());
+      if(id){ print("opening " + APPS[id].name + "..."); openApp(id); }
+      else print("no app named '" + escapeHtml(args.join(" ")) + "'");
+    }
+    else print("unknown command: " + escapeHtml(cmd) + " \u2014 try 'help'");
+  }
+  print("Flux OS Terminal v1.0 \u2014 type 'help'.");
+  promptLine();
+}
+
+function renderCalculator(body){
+  body.innerHTML = '<div class="calc"><div class="calc-display" id="cd">0</div><div class="calc-grid" id="cg"></div></div>';
+  const disp = body.querySelector("#cd"), grid = body.querySelector("#cg");
+  let cur = "0", prev = null, op = null, fresh = true;
+  const keys = ["C","\u232B","%","\u00F7","7","8","9","\u00D7","4","5","6","\u2212","1","2","3","+","0",".","="];
+  const ops = {"\u00F7":(a,b)=>a/b,"\u00D7":(a,b)=>a*b,"\u2212":(a,b)=>a-b,"+":(a,b)=>a+b};
+  function show(){ disp.textContent = cur.length > 14 ? Number(cur).toPrecision(10).replace(/\.?0+$/,"") : cur; }
+  keys.forEach(k => {
+    const b = document.createElement("button"); b.textContent = k;
+    if(ops[k]) b.className = "op"; if(k === "=") b.className = "eq";
+    b.onclick = () => {
+      if(k === "C"){ cur="0"; prev=null; op=null; fresh=true; }
+      else if(k === "\u232B"){ cur = cur.length>1 ? cur.slice(0,-1) : "0"; }
+      else if(k === "%"){ cur = String(Number(cur)/100); fresh=true; }
+      else if(ops[k]){ if(op && !fresh){ equals(); } prev=Number(cur); op=k; fresh=true; }
+      else if(k === "="){ equals(); }
+      else if(k === "."){ if(fresh){cur="0.";fresh=false;} else if(!cur.includes(".")) cur+="."; }
+      else { if(fresh){cur=k;fresh=false;} else cur = cur==="0" ? k : cur+k; }
+      show();
+    };
+    grid.appendChild(b);
+  });
+  function equals(){
+    if(op === null || prev === null) return;
+    const r = ops[op](prev, Number(cur));
+    cur = String(Math.round(r*1e10)/1e10); op=null; prev=null; fresh=true;
+  }
+  show();
+}
+
+function renderNotepad(body){
+  body.innerHTML =
+    '<div class="notes"><div class="notes-bar">'+
+    '<button id="np-save">Save</button><button id="np-clear">Clear</button>'+
+    '<span class="count" id="np-count">0 chars</span></div>'+
+    '<textarea id="np-text" placeholder="Start typing..."></textarea></div>';
+  const ta = body.querySelector("#np-text"), count = body.querySelector("#np-count");
+  ta.value = localStorage.getItem("flux-notepad") || "";
+  const upd = () => count.textContent = ta.value.length + " chars";
+  ta.oninput = upd; upd();
+  body.querySelector("#np-save").onclick = () => {
+    localStorage.setItem("flux-notepad", ta.value);
+    count.textContent = "Saved \u2713 " + ta.value.length + " chars";
+  };
+  body.querySelector("#np-clear").onclick = () => { ta.value=""; upd(); };
+}
+
+function renderSettings(body){
+  body.innerHTML =
+    '<div class="settings"><div><h3>WALLPAPER</h3><div class="swatches" id="st-wp"></div></div>'+
+    '<div><h3>ACCENT COLOR</h3><div class="accents" id="st-ac"></div></div>'+
+    '<div><h3>ABOUT</h3><div class="about"><b>Flux OS</b> v1.0<br>A brand new browser OS, built from scratch.<br>Ten apps. Zero copies. All flow.</div></div></div>';
+  const wps = [["wp-aurora","Aurora"],["wp-sunset","Sunset"],["wp-ocean","Ocean"],["wp-midnight","Midnight"]];
+  const wpBox = body.querySelector("#st-wp");
+  const cur = document.getElementById("wallpaper").className;
+  wps.forEach(([cls]) => {
+    const s = document.createElement("div");
+    s.className = "swatch " + cls + (cur === cls ? " sel" : "");
+    s.onclick = () => {
+      document.getElementById("wallpaper").className = cls;
+      localStorage.setItem("flux-wp", cls);
+      wpBox.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel")); s.classList.add("sel");
+    };
+    wpBox.appendChild(s);
+  });
+  const acc = [["#22d3ee","#a78bfa"],["#fb923c","#ec4899"],["#4ade80","#22d3ee"],["#f472b6","#c084fc"]];
+  const acBox = body.querySelector("#st-ac");
+  acc.forEach(([a1,a2]) => {
+    const d = document.createElement("div");
+    d.className = "accent-dot"; d.style.background = "linear-gradient(135deg,"+a1+","+a2+")";
+    d.onclick = () => {
+      document.documentElement.style.setProperty("--accent", a1);
+      document.documentElement.style.setProperty("--accent2", a2);
+      localStorage.setItem("flux-ac", JSON.stringify([a1,a2]));
+      acBox.querySelectorAll(".accent-dot").forEach(x=>x.classList.remove("sel")); d.classList.add("sel");
+    };
+    acBox.appendChild(d);
+  });
+}
+
+function renderAppStore(body){
+  body.innerHTML = '<div class="store" id="store-grid"></div>';
+  const g = body.querySelector("#store-grid");
+  ORDER.forEach(id => {
+    const a = APPS[id];
+    const c = document.createElement("div"); c.className = "app-card";
+    c.innerHTML = '<div class="glyph">'+a.icon+'</div><h4>'+a.name+'</h4><p>'+a.desc+'</p>';
+    const b = document.createElement("button"); b.textContent = "Open";
+    b.onclick = () => openApp(id);
+    c.appendChild(b); g.appendChild(c);
+  });
+}
+
+function renderFileRunner(body){
+  body.innerHTML =
+    '<div class="fr"><label>Choose file<input type="file" id="fr-in" style="display:none" '+
+    'accept=".html,.htm,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp3,.wav,.ogg,.mp4,.webm,.txt"></label>'+
+    '<div class="stage" id="fr-stage">Pick a file to preview it here.</div></div>';
+  const inp = body.querySelector("#fr-in"), stage = body.querySelector("#fr-stage");
+  inp.onchange = () => {
+    const f = inp.files[0]; if(!f) return;
+    const url = URL.createObjectURL(f);
+    stage.innerHTML = "";
+    const ext = (f.name.split(".").pop()||"").toLowerCase();
+    if(["png","jpg","jpeg","gif","svg","webp"].includes(ext)){
+      const img = document.createElement("img"); img.src = url; stage.appendChild(img);
+    } else if(["mp3","wav","ogg"].includes(ext)){
+      const au = document.createElement("audio"); au.src = url; au.controls = true; stage.appendChild(au);
+    } else if(["mp4","webm"].includes(ext)){
+      const v = document.createElement("video"); v.src = url; v.controls = true; stage.appendChild(v);
+    } else if(["html","htm"].includes(ext)){
+      const fr = document.createElement("iframe"); fr.src = url; stage.appendChild(fr);
+    } else {
+      const r = new FileReader();
+      r.onload = () => { const p = document.createElement("pre"); p.style.cssText="padding:16px;white-space:pre-wrap;color:var(--text)"; p.textContent = r.result; stage.appendChild(p); };
+      r.readAsText(f);
+    }
+  };
+}
+
+/* ---------- restore prefs + boot ---------- */
+(function(){
+  const wp = localStorage.getItem("flux-wp");
+  if(wp) document.getElementById("wallpaper").className = wp;
+  const ac = localStorage.getItem("flux-ac");
+  if(ac){ try{ const [a1,a2]=JSON.parse(ac);
+    document.documentElement.style.setProperty("--accent",a1);
+    document.documentElement.style.setProperty("--accent2",a2); }catch(e){} }
+})();
+let bp = 0;
+const bootTimer = setInterval(() => {
+  bp += 8 + Math.random()*14;
+  if(bp >= 100){ bp = 100; clearInterval(bootTimer);
+    setTimeout(() => document.getElementById("boot").classList.add("done"), 350); }
+  document.getElementById("boot-fill").style.width = bp + "%";
+}, 160);
+</script>
+</body>
+</html>
