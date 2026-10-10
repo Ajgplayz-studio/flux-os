@@ -179,16 +179,6 @@
     font-size:13.5px;line-height:1.7;color:var(--text-dim)}
   .about b{color:var(--text)}
 
-  /* ---------- app: app store ---------- */
-  .store{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;align-content:start}
-  .app-card{background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:16px;
-    padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-  .app-card .glyph{font-size:34px}
-  .app-card h4{font-size:15px}
-  .app-card p{font-size:12.5px;color:var(--text-dim);line-height:1.5;flex:1}
-  .app-card button{padding:9px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f}
-
   /* ---------- app: file runner ---------- */
   .fr{padding:20px;display:flex;flex-direction:column;gap:14px;height:100%}
   .fr label{display:inline-block;padding:12px 22px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;
@@ -244,12 +234,11 @@ const APPS = {
   calculator:{name:"Calculator",  icon:"\u{1F9EE}", desc:"Quick math, Flux style.", render:renderCalculator},
   notepad:   {name:"Notepad",     icon:"\u{1F4DD}", desc:"Jot things down. Auto-saves.", render:renderNotepad},
   settings:  {name:"Settings",    icon:"\u2699\uFE0F", desc:"Wallpapers, accents, about.", render:renderSettings},
-  appstore:  {name:"App Store",   icon:"\u{1F6CD}\uFE0F", desc:"Every app on Flux OS.", render:renderAppStore},
   minecraft: {name:"Minecraft",   icon:"\u{1F9F1}", desc:"Blocky sandbox fun.", url:"https://ajgplayz-studio.github.io/Arcade-hub/minecraft.html"},
   realchat:  {name:"RealChat",    icon:"\u{1F4AC}", desc:"Chat with the crew.", render:renderRealChat},
   filerunner:{name:"File Runner", icon:"\u{1F4C4}", desc:"Open HTML, images, audio, video.", render:renderFileRunner},
 };
-const ORDER = ["browser","terminal","calculator","notepad","appstore","minecraft","realchat","filerunner","settings"];
+const ORDER = ["browser","terminal","calculator","notepad","minecraft","realchat","filerunner","settings"];
 
 let zTop = 100, activeWin = null;
 const wins = {};   // id -> {el, minimized}
@@ -507,19 +496,6 @@ function renderSettings(body){
       acBox.querySelectorAll(".accent-dot").forEach(x=>x.classList.remove("sel")); d.classList.add("sel");
     };
     acBox.appendChild(d);
-  });
-}
-
-function renderAppStore(body){
-  body.innerHTML = '<div class="store" id="store-grid"></div>';
-  const g = body.querySelector("#store-grid");
-  ORDER.forEach(id => {
-    const a = APPS[id];
-    const c = document.createElement("div"); c.className = "app-card";
-    c.innerHTML = '<div class="glyph">'+a.icon+'</div><h4>'+a.name+'</h4><p>'+a.desc+'</p>';
-    const b = document.createElement("button"); b.textContent = "Open";
-    b.onclick = () => openApp(id);
-    c.appendChild(b); g.appendChild(c);
   });
 }
 
