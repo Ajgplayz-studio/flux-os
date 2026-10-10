@@ -259,7 +259,7 @@
 "use strict";
 /* ================= Flux OS ================= */
 const APPS = {
-  browser:   {name:"Browser",    icon:"\u{1F310}", desc:"Surf the web — open-source Scramjet engine.", render:renderBrowser},
+  browser:   {name:"Browser",    icon:"\u{1F310}", desc:"Surf the web — open-source Puter Surf engine.", render:renderBrowser},
   terminal:  {name:"Terminal",    icon:"\u{1F4BB}", desc:"Command line for Flux OS.", render:renderTerminal},
   calculator:{name:"Calculator",  icon:"\u{1F9EE}", desc:"Quick math, Flux style.", render:renderCalculator},
   notepad:   {name:"Notepad",     icon:"\u{1F4DD}", desc:"Jot things down. Auto-saves.", render:renderNotepad},
@@ -407,13 +407,13 @@ function renderBrowser(body){
     '<button data-n="go" class="go">Go</button></div>'+
     '<div class="browser-view"><iframe class="browser-frame" title="Flux Browser"></iframe>'+
     '<div class="browser-home"><div class="big-orb"></div><h2>FLUX BROWSER</h2>'+
-    '<p class="pow">Powered by <b>Scramjet</b> \u2014 open source</p>'+
+    '<p class="pow">Powered by <b>Puter Surf</b> \u2014 open source</p>'+
     '<div class="qlinks"></div></div></div></div>';
   const frame = body.querySelector(".browser-frame");
   const urlbar = body.querySelector(".browser-url");
   const home = body.querySelector(".browser-home");
   const hist = []; let hi = -1;
-  const PROXY = "https://scramjet.mercurywork.shop/";
+  const PROXY = "https://puter.surf/";
   const proxyFor = url => PROXY + "?url=" + encodeURIComponent(url);
   const links = [
     ["\u{1F4AC}","RealChat","https://sites.google.com/view/realchat-revive"],
