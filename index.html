@@ -235,10 +235,10 @@ const APPS = {
   notepad:   {name:"Notepad",     icon:"\u{1F4DD}", desc:"Jot things down. Auto-saves.", render:renderNotepad},
   settings:  {name:"Settings",    icon:"\u2699\uFE0F", desc:"Wallpapers, accents, about.", render:renderSettings},
   minecraft: {name:"Minecraft",   icon:"\u{1F9F1}", desc:"Blocky sandbox fun.", url:"https://ajgplayz-studio.github.io/Arcade-hub/minecraft.html"},
-  realchat:  {name:"RealChat",    icon:"\u{1F4AC}", desc:"Chat with the crew.", render:renderRealChat},
+  prism:     {name:"Prism",       icon:"\u{1F4AC}", desc:"Chat with the crew.", url:"https://ajgplayz-studio.github.io/prism/"},
   filerunner:{name:"File Runner", icon:"\u{1F4C4}", desc:"Open HTML, images, audio, video.", render:renderFileRunner},
 };
-const ORDER = ["browser","terminal","calculator","notepad","minecraft","realchat","filerunner","settings"];
+const ORDER = ["browser","terminal","calculator","notepad","minecraft","prism","filerunner","settings"];
 
 let zTop = 100, activeWin = null;
 const wins = {};   // id -> {el, minimized}
@@ -372,13 +372,6 @@ function renderBrowser(body){
   f.title = "Flux Browser";
   f.src = "https://puter.surf/";
   body.appendChild(f);
-}
-
-function renderRealChat(body){
-  body.innerHTML =
-    '<div class="soon"><div class="big-orb"></div><h2>REALCHAT</h2>'+
-    '<p style="font-size:19px;letter-spacing:4px;color:var(--text)">COMING SOON</p>'+
-    '<p>RealChat is on its way. Check back soon.</p></div>';
 }
 
 function renderTerminal(body){
