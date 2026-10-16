@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube 2 Player</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body { font-family:"Segoe UI", system-ui, sans-serif; background:#000; color:#f1f1f1;
+    display:flex; flex-direction:column; }
+  #bar { display:flex; align-items:center; gap:12px; padding:10px 16px; background:#0f0f0f; }
+  #title { flex:1; font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #close { width:36px; height:36px; border-radius:50%; border:none; background:#272727; color:#fff;
+    font-size:18px; cursor:pointer; line-height:1; }
+  #close:hover { background:#f03; }
+  #stage { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
+  video { max-width:100%; max-height:100%; border-radius:8px; background:#000; }
+  audio { width:min(480px, 90%); }
+  .audiowrap { text-align:center; }
+  .audiowrap .note { font-size:56px; margin-bottom:14px; }
+  #err { color:#f66; font-size:14px; }
+  #err a { color:#8b9bff; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <button id="close" title="Back to YouTube 2" aria-label="Back">✕</button>
+  <div id="title">Player</div>
+</div>
+<div id="stage"></div>
+<script>
+  document.getElementById('close').onclick = () => { location.href = 'yt2.html'; };
+  const vid = new URLSearchParams(location.search).get('vid');
+  const stage = document.getElementById('stage');
+  const title = document.getElementById('title');
+  if(!vid){
+    stage.innerHTML = '<p id="err">Nothing to play. <a href="yt2.html">Back to YouTube 2</a></p>';
+  } else {
+    title.textContent = decodeURIComponent(vid);
+    if(/\.mp3$/i.test(vid)){
+      const wrap = document.createElement('div');
+      wrap.className = 'audiowrap';
+      wrap.innerHTML = '<div class="note">🎵</div>';
+      const a = document.createElement('audio');
+      a.controls = true; a.autoplay = true; a.src = vid;
+      wrap.appendChild(a);
+      stage.appendChild(wrap);
+    } else {
+      const v = document.createElement('video');
+      v.controls = true; v.autoplay = true; v.src = vid;
+      stage.appendChild(v);
+    }
+  }
+</script>
+</body>
+</html>
