@@ -187,6 +187,11 @@
     justify-content:center;overflow:auto;color:var(--text-dim);font-size:14px;min-height:200px;background:rgba(0,0,0,.25)}
   .fr .stage img,.fr .stage video{max-width:100%;max-height:100%}
   .fr .stage iframe{width:100%;height:100%;border:none;background:#fff}
+  .fr-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .fr .fs-btn{padding:12px 22px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;
+    border:1px solid var(--glass-border);background:rgba(255,255,255,.07);color:var(--text);font-family:inherit}
+  .fr .fs-btn:hover{background:rgba(255,255,255,.15)}
+  .fr:fullscreen{background:rgba(5,8,18,.92)}
 
   .browser-frame{width:100%;height:100%;border:none;background:#0a0f22}
 
@@ -496,10 +501,20 @@ function renderSettings(body){
 
 function renderFileRunner(body){
   body.innerHTML =
-    '<div class="fr"><label>Choose file<input type="file" id="fr-in" style="display:none" '+
+    '<div class="fr"><div class="fr-top"><label>Choose file<input type="file" id="fr-in" style="display:none" '+
     'accept=".html,.htm,.png,.jpg,.jpeg,.gif,.svg,.webp,.mp3,.wav,.ogg,.mp4,.webm,.txt"></label>'+
+    '<button class="fs-btn" id="fr-fs">\u26F6 Fullscreen</button></div>'+
     '<div class="stage" id="fr-stage">Pick a file to preview it here.</div></div>';
   const inp = body.querySelector("#fr-in"), stage = body.querySelector("#fr-stage");
+  const frEl = body.querySelector(".fr"), fsBtn = body.querySelector("#fr-fs");
+  fsBtn.onclick = () => {
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(frEl.requestFullscreen) frEl.requestFullscreen();
+  };
+  document.addEventListener("fullscreenchange", () => {
+    if(!body.isConnected) return;
+    fsBtn.textContent = document.fullscreenElement === frEl ? "\u2715 Exit fullscreen" : "\u26F6 Fullscreen";
+  });
   inp.onchange = () => {
     const f = inp.files[0]; if(!f) return;
     const url = URL.createObjectURL(f);
