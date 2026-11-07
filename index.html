@@ -178,6 +178,8 @@
   .about{background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:14px;padding:16px;
     font-size:13.5px;line-height:1.7;color:var(--text-dim)}
   .about b{color:var(--text)}
+  .upd-btn{margin-top:10px;padding:10px 18px;border-radius:12px;border:1px solid var(--glass-border);cursor:pointer;font-weight:600;font-size:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121f}
+  .upd-btn:hover{filter:brightness(1.1)}
 
   /* ---------- app: file runner ---------- */
   .fr{padding:20px;display:flex;flex-direction:column;gap:14px;height:100%}
@@ -470,7 +472,8 @@ function renderSettings(body){
   body.innerHTML =
     '<div class="settings"><div><h3>WALLPAPER</h3><div class="swatches" id="st-wp"></div></div>'+
     '<div><h3>ACCENT COLOR</h3><div class="accents" id="st-ac"></div></div>'+
-    '<div><h3>ABOUT</h3><div class="about"><b>Flux OS</b> v1.0<br>A brand new browser OS, built from scratch.<br>Nine apps. Zero copies. All flow.</div></div></div>';
+    '<div><h3>ABOUT</h3><div class="about"><b>Flux OS</b> v1.0<br>A brand new browser OS, built from scratch.<br>Nine apps. Zero copies. All flow.<br><br>Flux OS needs an update.<br><button class="upd-btn" id="flux-update">Update</button></div></div></div>';
+  body.querySelector("#flux-update").onclick = () => window.open("https://tinyurl.com/shift-OS", "_blank");
   const wps = [["wp-aurora","Aurora"],["wp-sunset","Sunset"],["wp-ocean","Ocean"],["wp-midnight","Midnight"]];
   const wpBox = body.querySelector("#st-wp");
   const cur = document.getElementById("wallpaper").className;
